@@ -1,0 +1,681 @@
+{
+  "info": {
+    "name": "Kodo Motors - Semana 10 - Manejo de errores",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Control (casos felices)",
+      "item": [
+        {
+          "name": "Listar servicios -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Obtener servicio 1 -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios",
+                "1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Error 400 - Bad Request",
+      "item": [
+        {
+          "name": "Body vacío al crear servicio -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(400);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Id no numérico -> 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios",
+                "abc"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(400);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JSON mal formado -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(400);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Placa inválida en reserva -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicio_id\": 1,\n  \"nombre_cliente\": \"Ana Pérez\",\n  \"placa\": \"!!\",\n  \"fecha\": \"2026-12-10\",\n  \"hora\": \"10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(400);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Error 404 - Not Found",
+      "item": [
+        {
+          "name": "Servicio inexistente -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios",
+                "9999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(404);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reserva inexistente (PUT) -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas",
+                "9999"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicio_id\": 1,\n  \"nombre_cliente\": \"Ana Pérez\",\n  \"placa\": \"ABC-123\",\n  \"fecha\": \"2026-12-10\",\n  \"hora\": \"10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(404);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reserva con servicio_id inexistente -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicio_id\": 9999,\n  \"nombre_cliente\": \"Ana Pérez\",\n  \"placa\": \"ABC-123\",\n  \"fecha\": \"2026-12-10\",\n  \"hora\": \"10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(404);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ruta mal escrita -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/serviciox",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "serviciox"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(404);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Error 409 - Conflict",
+      "item": [
+        {
+          "name": "Nombre de servicio duplicado -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cambio de aceite\",\n  \"precio\": 100,\n  \"duracion_min\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(409);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar servicio con reservas -> 409",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/servicios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "servicios",
+                "1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(409);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Choque de fecha y hora -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicio_id\": 1,\n  \"nombre_cliente\": \"Ana Pérez\",\n  \"placa\": \"ABC-123\",\n  \"fecha\": \"2026-12-01\",\n  \"hora\": \"09:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(409);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservar servicio inactivo -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"servicio_id\": 4,\n  \"nombre_cliente\": \"Ana Pérez\",\n  \"placa\": \"ABC-123\",\n  \"fecha\": \"2026-12-10\",\n  \"hora\": \"10:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(409);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Error 500 - Inesperado",
+      "item": [
+        {
+          "name": "Error forzado (no filtra detalles) -> 500",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/_prueba/error-500",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "_prueba",
+                "error-500"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 500', () => pm.response.to.have.status(500));",
+                  "pm.test('Formato de error estándar', () => {",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.all.keys('estado','mensaje','errores','ruta','fecha');",
+                  "  pm.expect(j.estado).to.eql(500);",
+                  "});",
+                  "pm.test('No expone información interna', () => {",
+                  "  pm.expect(pm.response.text()).to.not.match(/stack|ECONNREFUSED|secreto123|node_modules/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

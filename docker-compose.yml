@@ -1,0 +1,11 @@
+# MySQL de práctica con el schema de Kodo ya cargado. Uso: docker compose up -d
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: kodo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-cambia_esto}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
